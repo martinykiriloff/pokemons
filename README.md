@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pokemon Tiles Application
+
+Display the first 8 pokemons of a pokemon API
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+NodeJS 18 or higher requried
+
+### Installation
+
+1. Go to project directory:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd tech_task
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install the dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Start the development server:
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Open your browser and visit [http://localhost:3000](http://localhost:3000)
 
-## Learn More
+You should see the pokemons
 
-To learn more about Next.js, take a look at the following resources:
+## My Approach
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Architecture Choices
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+I’m using Next.js 16 with the App Router, and most of the project runs on Server Components. It keeps things fast, helps with SEO, and cuts down the amount of JavaScript sent to the client. Since the data loads on the server, users see content immediately.
 
-## Deploy on Vercel
+For loading states, I rely on React Suspense instead of manually tracking state with hooks. 
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+I also kept logic separated
+1. API logic goes in lib/api/
+2. lib/utilities/ for helpers
+3. reusable UI components stay in app/components/
+4. TypeScript interfaces are stored in lib/interfaces/
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The Pokémon ID is pulled out of the URL with a small regex, so I don’t need to make 8 extra fetch requests just to get IDs. It’s faster and lighter.
+
+Finally, the images are handled through the Next.js Image component to get automatic optimization, lazy loading
+
+
+## Assumptions
+
+1. **API Reliability**: PokemonAPI always returns data in expected format. For prod build a more robus error handling is desired
+2. **Image Availability**: Assumed all pokemons have their images available at the given url.
+
+## Trade-offs
+
+**Server Components vs Client Components**
+- **Chose**: Server Components for better performance
+- **Trade-off**: Can't use hooks like useState directly in the main component
+- **Solution**: Used Suspense for loading states, which is the recommended Next.js pattern
+
+**Extracting ID from URL vs API Call**
+- **Chose**: Extract ID using regex from the URL
+- **Trade-off**: Depends the URL to be consistent
+- **Why**: Avoids 8 extra HTTP requests
+
+## Time Breakdown
+
+**Time spent: About 1.5 hours**
+
+## Project Structure
+
+```
+tech_task/
+├── app/
+│   ├── components/          # Reusable UI components
+│   │   ├── Error.tsx
+│   │   ├── HeroSection.tsx
+│   │   ├── Loading.tsx
+│   │   └── TileComponent.tsx
+│   ├── tiles/               # Tiles page and related files
+│   │   ├── page.tsx         # Main tiles page (Server Component)
+│   │   ├── loading.tsx      # Loading state
+│   │   ├── error.tsx        # Error boundary
+│   │   └── style.css        # Page-specific styles
+│   ├── globals.css          # Global styles
+│   ├── layout.tsx           # Root layout with Inter font
+│   └── page.tsx             # Home page
+├── lib/
+│   ├── api/
+│   │   └── pokemon.ts       # API functions
+│   ├── constants/
+│   │   └── config.ts        # App constants
+│   ├── interfaces/          # TypeScript type definitions
+│   └── utilities/           # Helper functions
+│       ├── extractPokemonId.ts
+│       └── generatePokemonImageUrl.ts
+└── next.config.ts           # Next.js configuration
+```
